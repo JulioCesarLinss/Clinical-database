@@ -1,2 +1,4 @@
 FDC_Intermediate_Dimension/Datasets/Preprocessed_DM_xx.csv
 FDC_Low_Dimension/Datasets/Preprocessed_DM_xx.csv
+FDC_Low_Dimension/__pycache__
+FDC_Intermediate_Dimension/__pycache__
