@@ -10,8 +10,8 @@ class Clustering:
         self.low_dim = low_dim
         self.visual = visual
 
-    def Agglomerative(self, number_of_clusters, affinity, linkage):
-        ag_cluster = AgglomerativeClustering(n_clusters=number_of_clusters, affinity=affinity, linkage=linkage)
+    def Agglomerative(self, number_of_clusters, metric, linkage):
+        ag_cluster = AgglomerativeClustering(n_clusters=number_of_clusters, metric=metric, linkage=linkage)
         clusters = ag_cluster.fit_predict(self.high_dim)
         (values, counts) = np.unique(clusters, return_counts=True)
         self.low_dim['Cluster'] = clusters
