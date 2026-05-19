@@ -1,6 +1,10 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+#imports para o hdbscan
+import pandas as pd
+import numpy as np
+from scipy.stats import f_oneway, kruskal 
 
 
 # Função para calcular a maior distância intra-cluster
@@ -205,3 +209,52 @@ def elbow_plot(data):
 
     # Exibe o gráfico
     plt.show()
+
+#função auxiliar para hdbscan
+def calcular_anova(data, cluster_list, cont_list, ord_list, alpha=0.05):
+    # Cria uma cópia do dataframe e adiciona a coluna de clusters
+        df = data.copy()
+        df['Cluster'] = cluster_list
+    
+    # IMPORTANTE: Ignorar o cluster de ruído (-1) gerado pelo DBSCAN/HDBSCAN.
+    # O ruído não é um grupo clínico válido para ser comparado na ANOVA.
+        df = df[df['Cluster'] != -1]
+    
+    # Identifica os clusters únicos válidos
+        clusters_unicos = df['Cluster'].unique()
+    
+    # Se houver apenas 1 cluster (ou 0), não há como comparar
+        if len(clusters_unicos) <= 1:
+            return 0.0
+        
+        features_significativas = 0
+        total_features = len(cont_list) + len(ord_list)
+    
+        if total_features == 0:
+            return 0.0
+        
+    # 1. Teste para variáveis contínuas (ANOVA - f_oneway)
+        for col in cont_list:
+        # Separa os valores da coluna agrupados por cluster
+            grupos = [df[df['Cluster'] == c][col].dropna() for c in clusters_unicos]
+            try:
+                stat, p_value = f_oneway(*grupos)
+                if p_value < alpha:
+                    features_significativas += 1
+            except ValueError:
+                pass # Ignora caso algum grupo esteja vazio
+            
+    # 2. Teste para variáveis ordinais (Kruskal-Wallis)
+        for col in ord_list:
+            grupos = [df[df['Cluster'] == c][col].dropna() for c in clusters_unicos]
+            try:
+                stat, p_value = kruskal(*grupos)
+                if p_value < alpha:
+                    features_significativas += 1
+            except ValueError:
+                pass
+            
+    # Calcula a porcentagem final
+        porcentagem = (features_significativas / total_features) * 100
+    
+        return round(porcentagem, 2)
