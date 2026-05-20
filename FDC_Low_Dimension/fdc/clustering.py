@@ -3,6 +3,7 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.cluster import KMeans
 from sklearn.cluster import DBSCAN
 from fdc.visualize import plotCluster
+from hdbscan import HDBSCAN
 
 class Clustering:
     def __init__(self, high_dim, low_dim, visual):
@@ -44,6 +45,15 @@ class Clustering:
 
         return self.low_dim.Cluster.to_list(), counts
 
-#possível algortimo mini batch kmeans
-#algoritmo . Gaussian Mixture Models (GMM)
-# Spectral Clustering
+#algorimto hdbscan
+    def HDBSCAN(self, min_cluster_size=15):
+        clusterer = HDBSCAN(min_cluster_size=min_cluster_size)
+        clusters = clusterer.fit_predict(self.high_dim)
+        noise = np.sum(clusters == -1)
+        (values, counts) = np.unique(clusters, return_counts=True)
+        print(f"Pacientes perdidos como ruído: {noise} de {len(clusters)}")
+        print(f"Clusters encontrados: {len(values[values >= 0])}")
+        self.low_dim['Cluster'] = clusters
+        if self.visual:
+            plotCluster(self.low_dim, clusterName="Cluster", xName="FDC_0", yName="FDC_1", stroke=3)
+        return self.low_dim.Cluster.to_list(), counts
